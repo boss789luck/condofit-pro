@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F472B6" />
+      <stop offset="100%" stop-color="#EC4899" />
+    </linearGradient>
+  </defs>
+  <!-- Pink Rounded Background -->
+  <rect width="64" height="64" rx="16" fill="url(#bg)" />
+
+  <!-- Overhead Barbell -->
+  <line x1="10" y1="18" x2="54" y2="18" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round" />
+  <!-- Left Plates -->
+  <rect x="7" y="11" width="4.5" height="14" rx="2" fill="#0F0F12" />
+  <rect x="12.5" y="13" width="3.5" height="10" rx="1.5" fill="#FFFFFF" />
+  <!-- Right Plates -->
+  <rect x="52.5" y="11" width="4.5" height="14" rx="2" fill="#0F0F12" />
+  <rect x="48" y="13" width="3.5" height="10" rx="1.5" fill="#FFFFFF" />
+
+  <!-- Weightlifter Head -->
+  <circle cx="32" cy="26.5" r="5" fill="#FFFFFF" />
+
+  <!-- Raised Arms Holding Bar -->
+  <path d="M22,18 L24.5,31 L32,34 L39.5,31 L42,18" fill="none" stroke="#FFFFFF" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- Torso -->
+  <line x1="32" y1="33" x2="32" y2="45" stroke="#FFFFFF" stroke-width="6.5" stroke-linecap="round" />
+
+  <!-- Athletic Stance Legs -->
+  <path d="M25,55 L29,44 L35,44 L39,55" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+</svg>
