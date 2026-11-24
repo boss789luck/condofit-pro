@@ -3,6 +3,7 @@ import {
   Activity,
   BookOpen,
   Calendar,
+  CheckCircle2,
   ChevronRight,
   Clock,
   Droplets,
@@ -10,10 +11,12 @@ import {
   Flame,
   LayoutDashboard,
   Play,
+  RotateCcw,
   Search,
   SlidersHorizontal,
   Sparkles,
   Target,
+  Trash2,
   TrendingDown,
 } from 'lucide-react';
 import { EQUIPMENT_LIST, MUSCLE_INFO } from './data/muscles';
@@ -42,6 +45,9 @@ export function App() {
     profile,
     sessions,
     weights,
+    activeDraft,
+    saveActiveDraft,
+    clearActiveDraft,
     personalRecords,
     weeklyMuscleHeatmap,
     weeklyStats,
@@ -57,7 +63,41 @@ export function App() {
 
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
-  const [activeWorkout, setActiveWorkout] = useState<{ workout: WorkoutDay; phaseNumber: number } | null>(null);
+  const [activeWorkout, setActiveWorkout] = useState<{
+    workout: WorkoutDay;
+    phaseNumber: number;
+    resumeDraft?: boolean;
+  } | null>(null);
+
+  const handleQuickSaveDraft = () => {
+    if (!activeDraft) return;
+    const elapsedMin = Math.max(1, Math.round((Date.now() - activeDraft.startedAtMs) / 60000));
+    const totalSets = activeDraft.loggedExercises.reduce((a, ex) => a + ex.sets.length, 0);
+    const doneSets = activeDraft.loggedExercises.reduce(
+      (a, ex) => a + ex.sets.filter((s) => s.completed).length,
+      0
+    );
+    const totalVolumeKg = activeDraft.loggedExercises.reduce(
+      (acc, ex) =>
+        acc + ex.sets.reduce((sAcc, st) => (st.completed ? sAcc + st.weightKg * st.reps : sAcc), 0),
+      0
+    );
+    const completionRatio = totalSets > 0 ? doneSets / totalSets : 1;
+    addSession({
+      id: `sess-${Date.now()}`,
+      dateISO: new Date().toISOString(),
+      workoutDayId: activeDraft.workout.id,
+      workoutTitleTh: activeDraft.workout.titleTh,
+      phaseNumber: activeDraft.phaseNumber,
+      durationMinutes: elapsedMin,
+      totalVolumeKg: Math.round(totalVolumeKg),
+      estimatedCalories: Math.max(50, Math.round(activeDraft.workout.estimatedCalories * Math.max(0.35, completionRatio))),
+      exercises: activeDraft.loggedExercises,
+      notes: activeDraft.notes.trim() || undefined,
+    });
+    clearActiveDraft();
+    setActiveTab('history');
+  };
 
   // Library filters
   const [equipmentFilter, setEquipmentFilter] = useState<EquipmentCategory | 'all'>('all');
@@ -217,6 +257,62 @@ export function App() {
 
       {/* Main Content Container */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 space-y-6">
+        {/* AUTO-SAVED IN-PROGRESS WORKOUT RESUME BANNER */}
+        {activeDraft && !activeWorkout && (() => {
+          const doneSets = activeDraft.loggedExercises.reduce(
+            (a, ex) => a + ex.sets.filter((s) => s.completed).length,
+            0
+          );
+          const totalSets = activeDraft.loggedExercises.reduce((a, ex) => a + ex.sets.length, 0);
+          return (
+            <div className="rounded-2xl bg-[#0F0F12] text-white p-4 sm:p-5 border border-pink-500/40 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-pink-500/20 border border-pink-500/40 flex items-center justify-center shrink-0">
+                  <RotateCcw className="w-5 h-5 text-pink-400" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-pink-500 animate-pulse" />
+                    <span className="text-xs font-bold text-pink-400">
+                      มีเซสชันที่เล่นค้างไว้ (บันทึกอัตโนมัติแล้ว · {doneSets}/{totalSets} เซต)
+                    </span>
+                  </div>
+                  <div className="text-sm sm:text-base font-bold text-white mt-0.5">
+                    {activeDraft.workout.titleTh}
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <button
+                  onClick={() =>
+                    setActiveWorkout({
+                      workout: activeDraft.workout,
+                      phaseNumber: activeDraft.phaseNumber,
+                      resumeDraft: true,
+                    })
+                  }
+                  className="px-4 py-2 rounded-xl bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition"
+                >
+                  <Play className="w-3.5 h-3.5 fill-current" /> เล่นต่อจากที่ค้าง
+                </button>
+                <button
+                  onClick={handleQuickSaveDraft}
+                  className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5 text-pink-300" /> บันทึกเข้าประวัติเลย
+                </button>
+                <button
+                  onClick={clearActiveDraft}
+                  className="p-2 rounded-xl text-zinc-400 hover:text-pink-400 hover:bg-white/10 cursor-pointer transition"
+                  title="ลบเซสชันค้างนี้"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* ==================== TAB 1: DASHBOARD ==================== */}
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
@@ -740,13 +836,24 @@ export function App() {
         <LiveWorkoutSession
           workout={activeWorkout.workout}
           phaseNumber={activeWorkout.phaseNumber}
+          initialDraft={
+            activeWorkout.resumeDraft && activeDraft?.workout.id === activeWorkout.workout.id
+              ? activeDraft
+              : null
+          }
           personalRecords={personalRecords}
+          onDraftChange={saveActiveDraft}
           onFinish={(session) => {
             addSession(session);
+            clearActiveDraft();
             setActiveWorkout(null);
             setActiveTab('history');
           }}
-          onCancel={() => setActiveWorkout(null)}
+          onMinimize={() => setActiveWorkout(null)}
+          onDiscard={() => {
+            clearActiveDraft();
+            setActiveWorkout(null);
+          }}
         />
       )}
     </div>

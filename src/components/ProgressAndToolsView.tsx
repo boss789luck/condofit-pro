@@ -12,6 +12,7 @@ import {
   Utensils,
 } from 'lucide-react';
 import { UserProfile, WeightEntry } from '../types/fitness';
+import { MuangThongMealPlanner } from './MuangThongMealPlanner';
 
 interface ProgressAndToolsViewProps {
   profile: UserProfile;
@@ -392,6 +393,16 @@ export const ProgressAndToolsView: React.FC<ProgressAndToolsViewProps> = ({
           </div>
         </div>
       </section>
+
+      {/* 2.5 MUANG THONG THANI (GENEVA 3) MEAL PLANNER & LINE MAN */}
+      <MuangThongMealPlanner
+        dailyBudget={profile.dailyFoodBudget ?? 500}
+        mealsPerDay={profile.mealsPerDay ?? 2}
+        targetCalories={nutrition.targetCalories}
+        targetProteinG={nutrition.proteinG}
+        onChangeBudget={(b) => onUpdateProfile({ dailyFoodBudget: b })}
+        onChangeMealsPerDay={(m) => onUpdateProfile({ mealsPerDay: m })}
+      />
 
       {/* 3. PRO GYM CALCULATORS */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-5">

@@ -146,6 +146,16 @@ export interface WeightEntry {
   note?: string;
 }
 
+export interface ActiveWorkoutDraft {
+  workout: WorkoutDay;
+  phaseNumber: number;
+  startedAtMs: number;
+  activeExIdx: number;
+  loggedExercises: LoggedExercise[];
+  notes: string;
+  updatedAtMs: number;
+}
+
 export interface UserProfile {
   name: string;
   startWeightKg: number;
@@ -163,4 +173,6 @@ export interface UserProfile {
   dailyWaterMl: number;
   waterTargetMl: number;
   waterLastDate: string;
+  dailyFoodBudget: number; // default 500 THB
+  mealsPerDay: number; // default 2 meals
 }

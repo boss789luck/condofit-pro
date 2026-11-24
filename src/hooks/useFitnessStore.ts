@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
-import { MuscleId, UserProfile, WeightEntry, WorkoutSessionLog } from '../types/fitness';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ActiveWorkoutDraft, MuscleId, UserProfile, WeightEntry, WorkoutSessionLog } from '../types/fitness';
 import { EXERCISE_MAP } from '../data/exercises';
 
 const STORAGE_KEY = 'condofit_pro_state_v1';
+const DRAFT_STORAGE_KEY = 'condofit_pro_active_workout_v1';
 
 interface StoredState {
   profile: UserProfile;
@@ -30,6 +31,8 @@ const DEFAULT_STATE: StoredState = {
     dailyWaterMl: 500,
     waterTargetMl: 3000,
     waterLastDate: todayStr(),
+    dailyFoodBudget: 500,
+    mealsPerDay: 2,
   },
   sessions: [],
   weights: [
@@ -66,8 +69,41 @@ function loadState(): StoredState {
   }
 }
 
+function loadActiveDraft(): ActiveWorkoutDraft | null {
+  try {
+    const raw = localStorage.getItem(DRAFT_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as ActiveWorkoutDraft;
+    if (parsed && parsed.workout && Array.isArray(parsed.loggedExercises)) {
+      return parsed;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export function useFitnessStore() {
   const [state, setState] = useState<StoredState>(loadState);
+  const [activeDraft, setActiveDraft] = useState<ActiveWorkoutDraft | null>(loadActiveDraft);
+
+  const saveActiveDraft = useCallback((draft: ActiveWorkoutDraft) => {
+    setActiveDraft(draft);
+    try {
+      localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
+    } catch {
+      // ignore storage quota issues
+    }
+  }, []);
+
+  const clearActiveDraft = useCallback(() => {
+    setActiveDraft(null);
+    try {
+      localStorage.removeItem(DRAFT_STORAGE_KEY);
+    } catch {
+      // ignore
+    }
+  }, []);
 
   useEffect(() => {
     try {
@@ -242,6 +278,9 @@ export function useFitnessStore() {
     profile: state.profile,
     sessions: state.sessions,
     weights: state.weights,
+    activeDraft,
+    saveActiveDraft,
+    clearActiveDraft,
     personalRecords,
     weeklyMuscleHeatmap,
     weeklyStats,

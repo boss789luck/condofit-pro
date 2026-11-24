@@ -13,7 +13,7 @@ import {
   CheckCircle2,
   Trash2,
 } from 'lucide-react';
-import { LoggedExercise, WorkoutDay, WorkoutSessionLog } from '../types/fitness';
+import { ActiveWorkoutDraft, LoggedExercise, WorkoutDay, WorkoutSessionLog } from '../types/fitness';
 import { EXERCISE_MAP } from '../data/exercises';
 import { ExerciseAnimator } from './ExerciseAnimator';
 import { MuscleMap } from './MuscleMap';
@@ -21,9 +21,12 @@ import { MuscleMap } from './MuscleMap';
 interface LiveWorkoutSessionProps {
   workout: WorkoutDay;
   phaseNumber: number;
+  initialDraft?: ActiveWorkoutDraft | null;
   personalRecords: Record<string, { maxWeightKg: number; maxReps: number; lastWeightKg: number; lastReps: number }>;
+  onDraftChange: (draft: ActiveWorkoutDraft) => void;
   onFinish: (session: WorkoutSessionLog) => void;
-  onCancel: () => void;
+  onMinimize: () => void;
+  onDiscard: () => void;
 }
 
 function playBeep() {
@@ -49,19 +52,29 @@ function playBeep() {
 export const LiveWorkoutSession: React.FC<LiveWorkoutSessionProps> = ({
   workout,
   phaseNumber,
+  initialDraft,
   personalRecords,
+  onDraftChange,
   onFinish,
-  onCancel,
+  onMinimize,
+  onDiscard,
 }) => {
-  const [elapsedSec, setElapsedSec] = useState(0);
+  const startedAtRef = useRef<number>(initialDraft?.startedAtMs ?? Date.now());
+  const [elapsedSec, setElapsedSec] = useState(() =>
+    Math.max(0, Math.floor((Date.now() - startedAtRef.current) / 1000))
+  );
   const [restSec, setRestSec] = useState(0);
-  const [activeExIdx, setActiveExIdx] = useState(0);
+  const [activeExIdx, setActiveExIdx] = useState(initialDraft?.activeExIdx ?? 0);
   const [showGuide, setShowGuide] = useState(true);
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState(initialDraft?.notes ?? '');
   const [showFinishConfirm, setShowFinishConfirm] = useState(false);
+  const [showExitMenu, setShowExitMenu] = useState(false);
 
-  const [loggedExercises, setLoggedExercises] = useState<LoggedExercise[]>(() =>
-    workout.exercises.map((item) => {
+  const [loggedExercises, setLoggedExercises] = useState<LoggedExercise[]>(() => {
+    if (initialDraft?.loggedExercises && initialDraft.loggedExercises.length === workout.exercises.length) {
+      return initialDraft.loggedExercises;
+    }
+    return workout.exercises.map((item) => {
       const pr = personalRecords[item.exerciseId];
       const ex = EXERCISE_MAP[item.exerciseId];
       const defaultW = pr?.lastWeightKg ?? (ex?.isCardio ? 0 : 20);
@@ -76,12 +89,32 @@ export const LiveWorkoutSession: React.FC<LiveWorkoutSessionProps> = ({
           isPR: false,
         })),
       };
-    })
-  );
+    });
+  });
+
+  // Auto-save draft on every change so swiping away / closing app NEVER loses progress
+  useEffect(() => {
+    onDraftChange({
+      workout,
+      phaseNumber,
+      startedAtMs: startedAtRef.current,
+      activeExIdx,
+      loggedExercises,
+      notes,
+      updatedAtMs: Date.now(),
+    });
+  }, [workout, phaseNumber, activeExIdx, loggedExercises, notes, onDraftChange]);
 
   useEffect(() => {
-    const id = setInterval(() => setElapsedSec((s) => s + 1), 1000);
-    return () => clearInterval(id);
+    const syncElapsed = () => {
+      setElapsedSec(Math.max(0, Math.floor((Date.now() - startedAtRef.current) / 1000)));
+    };
+    const id = setInterval(syncElapsed, 1000);
+    document.addEventListener('visibilitychange', syncElapsed);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener('visibilitychange', syncElapsed);
+    };
   }, []);
 
   const prevRestRef = useRef(0);
@@ -219,18 +252,21 @@ export const LiveWorkoutSession: React.FC<LiveWorkoutSessionProps> = ({
       <header className="flex items-center justify-between px-4 sm:px-6 py-3.5 bg-white border-b border-black/[0.06] shrink-0">
         <div className="flex items-center gap-3 min-w-0">
           <button
-            onClick={onCancel}
+            onClick={() => setShowExitMenu(true)}
             className="p-2 rounded-xl bg-[#FAFAFB] border border-black/[0.08] hover:border-pink-300 text-zinc-600 transition cursor-pointer"
-            title="ยกเลิกเซสชัน"
+            title="พับเก็บหรือออก"
           >
             <X className="w-5 h-5" />
           </button>
           <div className="min-w-0">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-pink-500 animate-pulse" />
-              <span className="text-xs font-semibold text-pink-600">กำลังออกกำลังกาย</span>
+              <span className="text-xs font-semibold text-pink-600">กำลังเล่น</span>
               <span className="text-xs font-mono text-zinc-700 bg-zinc-100 px-2 py-0.5 rounded-md font-semibold">
                 {formatTime(elapsedSec)}
+              </span>
+              <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                ✓ บันทึกอัตโนมัติ
               </span>
             </div>
             <h2 className="text-sm sm:text-base font-bold text-[#0F0F12] truncate">{workout.titleTh}</h2>
@@ -542,6 +578,49 @@ export const LiveWorkoutSession: React.FC<LiveWorkoutSessionProps> = ({
                 className="flex-1 py-2.5 rounded-xl bg-[#0F0F12] hover:bg-pink-500 text-sm font-bold text-white cursor-pointer transition"
               >
                 บันทึกประวัติเลย!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Exit / Minimize Safety Modal */}
+      {showExitMenu && (
+        <div className="fixed inset-0 z-60 bg-black/45 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-sm rounded-3xl bg-white border border-black/[0.08] p-6 space-y-4 shadow-2xl">
+            <div>
+              <h3 className="text-base font-bold text-[#0F0F12]">ต้องการออกจากหน้านี้?</h3>
+              <p className="text-xs text-zinc-500 mt-1">
+                เซตที่คุณติ๊กไปแล้ว ({completedSets}/{totalSets} เซต) ถูกบันทึกอัตโนมัติไว้ในเครื่องแล้ว ไม่ต้องกลัวหายครับ
+              </p>
+            </div>
+            <div className="space-y-2">
+              <button
+                onClick={onMinimize}
+                className="w-full py-2.5 rounded-xl bg-[#0F0F12] hover:bg-pink-500 text-white font-bold text-sm cursor-pointer transition"
+              >
+                พับเก็บไว้ก่อน (กลับมาเล่นต่อได้)
+              </button>
+              <button
+                onClick={() => {
+                  setShowExitMenu(false);
+                  setShowFinishConfirm(true);
+                }}
+                className="w-full py-2.5 rounded-xl bg-pink-50 hover:bg-pink-100 border border-pink-200 text-pink-700 font-bold text-sm cursor-pointer transition"
+              >
+                บันทึกเข้าประวัติ & จบเซสชัน
+              </button>
+              <button
+                onClick={onDiscard}
+                className="w-full py-2 rounded-xl text-xs font-semibold text-zinc-400 hover:text-rose-600 cursor-pointer transition"
+              >
+                ยกเลิกและลบทิ้งเซสชันนี้
+              </button>
+              <button
+                onClick={() => setShowExitMenu(false)}
+                className="w-full py-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-xs font-semibold text-zinc-700 cursor-pointer"
+              >
+                กลับไปเล่นต่อ
               </button>
             </div>
           </div>
