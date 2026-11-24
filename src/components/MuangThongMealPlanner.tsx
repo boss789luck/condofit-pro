@@ -1,19 +1,22 @@
 import React, { useMemo, useState } from 'react';
 import {
+  Car,
   Check,
   Copy,
-  ExternalLink,
   MapPin,
+  Navigation,
   RefreshCw,
   ShoppingBag,
   Sparkles,
   Wallet,
 } from 'lucide-react';
 import {
-  buildLinemanOrderUrl,
+  buildGoogleMapsDirectionUrl,
+  DiningMode,
   generateDailyMealCombo,
   MealCategory,
   MUANG_THONG_MEALS,
+  openInLinemanApp,
 } from '../data/muangThongMeals';
 
 interface MuangThongMealPlannerProps {
@@ -37,7 +40,7 @@ const CATEGORY_TABS: { id: MealCategory | 'all'; label: string }[] = [
   { id: 'clean', label: 'คลีน / สลัด' },
   { id: 'steak', label: 'สเต็ก' },
   { id: 'japanese', label: 'ญี่ปุ่น / แซลมอน' },
-  { id: 'thai', label: 'สุกี้ / ไทย' },
+  { id: 'thai', label: 'สุกี้ / ไทย / ชาบู' },
   { id: 'budget', label: 'ประหยัด / 7-11' },
 ];
 
@@ -50,17 +53,24 @@ export const MuangThongMealPlanner: React.FC<MuangThongMealPlannerProps> = ({
   onChangeMealsPerDay,
 }) => {
   const [shuffleSeed, setShuffleSeed] = useState(1);
+  const [diningMode, setDiningMode] = useState<DiningMode>('all');
   const [categoryFilter, setCategoryFilter] = useState<MealCategory | 'all'>('all');
   const [showOverBudget, setShowOverBudget] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+  const triggerToast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(null), 3200);
+  };
 
   const safeBudget = Math.max(150, dailyBudget || 500);
   const safeMeals = Math.max(1, Math.min(4, mealsPerDay || 2));
   const perMealBudget = Math.round(safeBudget / safeMeals);
 
   const dailyCombo = useMemo(
-    () => generateDailyMealCombo(safeBudget, safeMeals, shuffleSeed),
-    [safeBudget, safeMeals, shuffleSeed]
+    () => generateDailyMealCombo(safeBudget, safeMeals, shuffleSeed, diningMode),
+    [safeBudget, safeMeals, shuffleSeed, diningMode]
   );
 
   const comboTotals = useMemo(() => {
@@ -78,11 +88,13 @@ export const MuangThongMealPlanner: React.FC<MuangThongMealPlannerProps> = ({
 
   const filteredMeals = useMemo(() => {
     return MUANG_THONG_MEALS.filter((m) => {
+      if (diningMode === 'lineman' && !m.canLineman) return false;
+      if (diningMode === 'drive' && !m.canDriveIn) return false;
       if (categoryFilter !== 'all' && m.category !== categoryFilter) return false;
       if (!showOverBudget && m.priceThb > perMealBudget) return false;
       return true;
     }).sort((a, b) => b.proteinG - a.proteinG);
-  }, [categoryFilter, showOverBudget, perMealBudget]);
+  }, [diningMode, categoryFilter, showOverBudget, perMealBudget]);
 
   const handleCopy = (id: string, text: string) => {
     try {
@@ -97,27 +109,55 @@ export const MuangThongMealPlanner: React.FC<MuangThongMealPlannerProps> = ({
   const proteinGap = Math.max(0, targetProteinG - comboTotals.protein);
 
   return (
-    <section className="minimal-card rounded-3xl p-5 sm:p-6 space-y-6">
+    <section className="minimal-card rounded-3xl p-5 sm:p-6 space-y-6 relative">
+      {/* Floating Toast */}
+      {toastMsg && (
+        <div className="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-2xl bg-[#0F0F12] text-white text-xs font-semibold shadow-2xl border border-pink-500/40 whitespace-nowrap">
+          🩷 {toastMsg}
+        </div>
+      )}
+
       {/* Section Header */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-pink-50 border border-pink-200 text-[11px] font-bold text-pink-600 mb-2">
             <MapPin className="w-3.5 h-3.5" />
-            พิกัดจัดส่ง: อาคารเจนีวา 3 คอนโดเลควิว เมืองทองธานี
+            พิกัด: อาคารเจนีวา 3 คอนโดเลควิว เมืองทองธานี
           </div>
           <h2 className="text-lg sm:text-xl font-bold text-[#0F0F12]">
-            วางแผนสั่งอาหารเมืองทองธานี (พร้อมลิงก์ LINE MAN)
+            ร้านอาหารรอบเจนีวา 3 (สั่ง LINE MAN + ขับรถไปกินเอง)
           </h2>
           <p className="text-xs text-zinc-500 mt-0.5">
-            คัดร้านจริงรอบ Beehive, Cosmo Bazaar, บอนด์สตรีท และใต้ตึกเจนีวา 3 กรองตามงบและจำนวนมื้อได้เอง
+            กดเปิดแอป LINE MAN ได้ตรงๆ (คัดลอกชื่อร้านให้อัตโนมัติ) หรือกดนำทาง Google Maps ขับรถไปกินรอบเมืองทองฯ–แจ้งวัฒนะ
           </p>
+        </div>
+
+        {/* Mode Toggle: All / LINE MAN / Drive-in */}
+        <div className="flex items-center gap-1 bg-[#FAFAFB] p-1 rounded-2xl border border-black/[0.08]">
+          {[
+            { id: 'all' as DiningMode, label: 'ทั้งหมด' },
+            { id: 'lineman' as DiningMode, label: '🛵 สั่ง LINE MAN' },
+            { id: 'drive' as DiningMode, label: '🚗 ขับรถไปกิน' },
+          ].map((mode) => (
+            <button
+              key={mode.id}
+              type="button"
+              onClick={() => setDiningMode(mode.id)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                diningMode === mode.id
+                  ? 'bg-[#0F0F12] text-white'
+                  : 'text-zinc-500 hover:text-[#0F0F12]'
+              }`}
+            >
+              {mode.label}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Budget & Meal Count Filter Controls */}
       <div className="rounded-2xl bg-[#FAFAFB] border border-black/[0.07] p-4 sm:p-5 space-y-4">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end">
-          {/* Custom Budget Input + Presets */}
           <div className="lg:col-span-6 space-y-2">
             <label className="text-xs font-bold text-[#0F0F12] flex items-center gap-1.5">
               <Wallet className="w-4 h-4 text-pink-500" />
@@ -155,7 +195,6 @@ export const MuangThongMealPlanner: React.FC<MuangThongMealPlannerProps> = ({
             </div>
           </div>
 
-          {/* Meals Per Day Selector */}
           <div className="lg:col-span-6 space-y-2">
             <label className="text-xs font-bold text-[#0F0F12]">
               จำนวนมื้อต่อวัน (เฉลี่ยมื้อละ{' '}
@@ -232,9 +271,14 @@ export const MuangThongMealPlanner: React.FC<MuangThongMealPlannerProps> = ({
             >
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-pink-500 text-white">
-                    มื้อที่ {idx + 1}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-pink-500 text-white">
+                      มื้อที่ {idx + 1}
+                    </span>
+                    <span className="text-[10px] text-zinc-400 flex items-center gap-1">
+                      <Car className="w-3 h-3" /> {meal.driveMinutes} นาที
+                    </span>
+                  </div>
                   <span className="text-sm font-extrabold text-pink-300">฿{meal.priceThb}</span>
                 </div>
                 <div className="text-sm font-bold text-white leading-snug">{meal.menuName}</div>
@@ -242,21 +286,32 @@ export const MuangThongMealPlanner: React.FC<MuangThongMealPlannerProps> = ({
                 <div className="text-[11px] text-zinc-400">{meal.orderNoteTh}</div>
               </div>
 
-              <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/10">
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/10">
                 <div className="flex items-center gap-2 text-[11px]">
                   <span className="font-bold text-pink-300">P {meal.proteinG}g</span>
-                  <span className="text-zinc-400">C {meal.carbsG}g</span>
-                  <span className="text-zinc-400">F {meal.fatG}g</span>
-                  <span className="text-zinc-300">· {meal.kcal} kcal</span>
+                  <span className="text-zinc-400">· {meal.kcal} kcal</span>
                 </div>
-                <a
-                  href={buildLinemanOrderUrl(meal.linemanQuery)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 py-1.5 rounded-xl bg-pink-500 hover:bg-pink-600 text-white text-[11px] font-bold inline-flex items-center gap-1 shrink-0 transition"
-                >
-                  <ShoppingBag className="w-3 h-3" /> สั่ง LINE MAN
-                </a>
+                <div className="flex items-center gap-1.5">
+                  {meal.canLineman && (
+                    <button
+                      type="button"
+                      onClick={() => openInLinemanApp(meal.linemanQuery, triggerToast)}
+                      className="px-2.5 py-1.5 rounded-xl bg-pink-500 hover:bg-pink-600 text-white text-[11px] font-bold inline-flex items-center gap-1 cursor-pointer transition"
+                    >
+                      <ShoppingBag className="w-3 h-3" /> LINE MAN
+                    </button>
+                  )}
+                  {meal.canDriveIn && (
+                    <a
+                      href={buildGoogleMapsDirectionUrl(meal.mapsQuery)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-[11px] font-bold inline-flex items-center gap-1 transition"
+                    >
+                      <Navigation className="w-3 h-3 text-pink-300" /> นำทาง
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           ))}
@@ -272,11 +327,9 @@ export const MuangThongMealPlanner: React.FC<MuangThongMealPlannerProps> = ({
       {/* Filtered Muang Thong Thani Restaurant List */}
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h3 className="text-sm font-bold text-[#0F0F12]">
-              ร้านอาหารรอบเจนีวา 3 ที่อยู่ในงบไม่เกิน ฿{perMealBudget}/มื้อ ({filteredMeals.length} เมนู)
-            </h3>
-          </div>
+          <h3 className="text-sm font-bold text-[#0F0F12]">
+            ร้านอาหารรอบเจนีวา 3 ในงบไม่เกิน ฿{perMealBudget}/มื้อ ({filteredMeals.length} เมนู)
+          </h3>
           <label className="inline-flex items-center gap-2 text-xs text-zinc-500 cursor-pointer select-none">
             <input
               type="checkbox"
@@ -288,7 +341,6 @@ export const MuangThongMealPlanner: React.FC<MuangThongMealPlannerProps> = ({
           </label>
         </div>
 
-        {/* Category Filter Tabs */}
         <div className="flex flex-wrap gap-1.5">
           {CATEGORY_TABS.map((tab) => (
             <button
@@ -355,10 +407,16 @@ export const MuangThongMealPlanner: React.FC<MuangThongMealPlannerProps> = ({
 
                     <div className="text-sm font-bold text-[#0F0F12] leading-snug">{meal.menuName}</div>
                     <div className="text-xs font-semibold text-zinc-700">{meal.restaurantName}</div>
-                    <div className="text-[11px] text-zinc-400 flex items-center gap-1">
-                      <MapPin className="w-3 h-3 text-pink-400 shrink-0" />
-                      {meal.zoneLabel} · {meal.distanceLabel}
+                    <div className="text-[11px] text-zinc-500 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                      <span className="inline-flex items-center gap-1">
+                        <MapPin className="w-3 h-3 text-pink-500 shrink-0" />
+                        {meal.zoneLabel} ({meal.distanceLabel})
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-[#0F0F12] font-semibold">
+                        <Car className="w-3 h-3 text-pink-500" /> ขับรถ {meal.driveMinutes} นาที
+                      </span>
                     </div>
+                    <div className="text-[11px] text-zinc-500">🅿️ {meal.parkingInfoTh}</div>
                     <p className="text-[11px] text-zinc-600 bg-[#FAFAFB] rounded-lg px-2.5 py-1.5 border border-black/[0.05]">
                       📝 {meal.orderNoteTh}
                     </p>
@@ -372,31 +430,38 @@ export const MuangThongMealPlanner: React.FC<MuangThongMealPlannerProps> = ({
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <a
-                        href={buildLinemanOrderUrl(meal.linemanQuery)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 py-2 px-3 rounded-xl bg-[#0F0F12] hover:bg-pink-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition"
-                      >
-                        <ShoppingBag className="w-3.5 h-3.5" />
-                        สั่งผ่าน LINE MAN
-                        <ExternalLink className="w-3 h-3 opacity-80" />
-                      </a>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {meal.canLineman && (
+                        <button
+                          type="button"
+                          onClick={() => openInLinemanApp(meal.linemanQuery, triggerToast)}
+                          className="flex-1 py-2 px-3 rounded-xl bg-[#0F0F12] hover:bg-pink-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition"
+                        >
+                          <ShoppingBag className="w-3.5 h-3.5" />
+                          เปิดแอป LINE MAN
+                        </button>
+                      )}
+                      {meal.canDriveIn && (
+                        <a
+                          href={buildGoogleMapsDirectionUrl(meal.mapsQuery)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 py-2 px-3 rounded-xl bg-pink-50 hover:bg-pink-100 border border-pink-200 text-pink-700 text-xs font-bold flex items-center justify-center gap-1.5 transition"
+                        >
+                          <Navigation className="w-3.5 h-3.5" />
+                          นำทางไปกิน ({meal.driveMinutes} น.)
+                        </a>
+                      )}
                       <button
                         type="button"
                         onClick={() => handleCopy(meal.id, meal.linemanQuery)}
-                        className="px-3 py-2 rounded-xl bg-[#FAFAFB] hover:bg-pink-50 border border-black/[0.08] hover:border-pink-300 text-xs font-semibold text-zinc-700 flex items-center gap-1 cursor-pointer transition"
-                        title="คัดลอกชื่อร้านไปวางในแอป LINE MAN"
+                        className="p-2 rounded-xl bg-[#FAFAFB] hover:bg-pink-50 border border-black/[0.08] text-zinc-600 cursor-pointer transition"
+                        title="คัดลอกชื่อร้าน"
                       >
                         {copiedId === meal.id ? (
-                          <>
-                            <Check className="w-3.5 h-3.5 text-pink-600" /> คัดลอกแล้ว
-                          </>
+                          <Check className="w-4 h-4 text-pink-600" />
                         ) : (
-                          <>
-                            <Copy className="w-3.5 h-3.5" /> คัดลอกชื่อร้าน
-                          </>
+                          <Copy className="w-4 h-4" />
                         )}
                       </button>
                     </div>

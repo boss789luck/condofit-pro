@@ -1,10 +1,15 @@
 export type MealCategory = 'clean' | 'steak' | 'japanese' | 'thai' | 'budget';
+export type DiningMode = 'all' | 'lineman' | 'drive';
 
 export interface MuangThongMeal {
   id: string;
   restaurantName: string;
   zoneLabel: string;
   distanceLabel: string;
+  driveMinutes: number;
+  parkingInfoTh: string;
+  canLineman: boolean;
+  canDriveIn: boolean;
   category: MealCategory;
   categoryLabelTh: string;
   menuName: string;
@@ -15,6 +20,7 @@ export interface MuangThongMeal {
   fatG: number;
   kcal: number;
   linemanQuery: string;
+  mapsQuery: string;
   highlightTag?: string;
 }
 
@@ -24,6 +30,10 @@ export const MUANG_THONG_MEALS: MuangThongMeal[] = [
     restaurantName: 'Salad Factory (สาขา Beehive เมืองทอง)',
     zoneLabel: 'Beehive ไลฟ์สไตล์ มอลล์ ชั้น 1',
     distanceLabel: '1.1 กม. จากเจนีวา 3',
+    driveMinutes: 4,
+    parkingInfoTh: 'จอดรถในห้าง Beehive สะดวกมาก (ประทับตราจอดฟรี)',
+    canLineman: true,
+    canDriveIn: true,
     category: 'clean',
     categoryLabelTh: 'คลีน / สลัด',
     menuName: 'สเต็กอกไก่ย่างพริกไทยดำ + สลัดผักสด',
@@ -34,6 +44,7 @@ export const MUANG_THONG_MEALS: MuangThongMeal[] = [
     fatG: 9,
     kcal: 380,
     linemanQuery: 'Salad Factory Beehive เมืองทองธานี',
+    mapsQuery: 'Salad Factory Beehive Muang Thong Thani',
     highlightTag: 'โปรตีนสูงมาก · Users’ Choice',
   },
   {
@@ -41,6 +52,10 @@ export const MUANG_THONG_MEALS: MuangThongMeal[] = [
     restaurantName: 'Salad Factory (สาขา Beehive เมืองทอง)',
     zoneLabel: 'Beehive ไลฟ์สไตล์ มอลล์ ชั้น 1',
     distanceLabel: '1.1 กม. จากเจนีวา 3',
+    driveMinutes: 4,
+    parkingInfoTh: 'จอดรถในห้าง Beehive สะดวกมาก',
+    canLineman: true,
+    canDriveIn: true,
     category: 'clean',
     categoryLabelTh: 'คลีน / สลัด',
     menuName: 'สเต็กปลาแซลมอนย่างเกลือ + สลัดควินัว',
@@ -51,6 +66,7 @@ export const MUANG_THONG_MEALS: MuangThongMeal[] = [
     fatG: 16,
     kcal: 440,
     linemanQuery: 'Salad Factory Beehive เมืองทองธานี',
+    mapsQuery: 'Salad Factory Beehive Muang Thong Thani',
     highlightTag: 'โอเมก้า 3 + ลีนสุดๆ',
   },
   {
@@ -58,6 +74,10 @@ export const MUANG_THONG_MEALS: MuangThongMeal[] = [
     restaurantName: 'OiC Keto Cafe (หลัง Beehive เมืองทอง)',
     zoneLabel: 'หลังห้าง Beehive เมืองทองธานี',
     distanceLabel: '1.2 กม. จากเจนีวา 3',
+    driveMinutes: 5,
+    parkingInfoTh: 'จอดริมถนนหน้าร้าน / โซนหลัง Beehive',
+    canLineman: true,
+    canDriveIn: true,
     category: 'clean',
     categoryLabelTh: 'คลีน / คีโต',
     menuName: 'ข้าวดอกกะหล่ำกะเพราอกไก่ + ไข่ดาวน้ำ 2 ฟอง',
@@ -68,6 +88,7 @@ export const MUANG_THONG_MEALS: MuangThongMeal[] = [
     fatG: 8,
     kcal: 310,
     linemanQuery: 'OiC Keto Cafe เมืองทองธานี',
+    mapsQuery: 'OiC Keto Cafe Muang Thong Thani',
     highlightTag: 'คาร์บต่ำ รีดไขมันไว',
   },
   {
@@ -75,6 +96,10 @@ export const MUANG_THONG_MEALS: MuangThongMeal[] = [
     restaurantName: 'Beef Express (Beehive เมืองทอง)',
     zoneLabel: 'Beehive เมืองทองธานี',
     distanceLabel: '1.1 กม. จากเจนีวา 3',
+    driveMinutes: 4,
+    parkingInfoTh: 'จอดรถในห้าง Beehive ได้เลย',
+    canLineman: true,
+    canDriveIn: true,
     category: 'steak',
     categoryLabelTh: 'สเต็กเนื้อ / ไก่',
     menuName: 'สเต็กเนื้อสันใน (Tenderloin 200g) + ผักย่าง',
@@ -85,6 +110,7 @@ export const MUANG_THONG_MEALS: MuangThongMeal[] = [
     fatG: 12,
     kcal: 390,
     linemanQuery: 'Beef Express เมืองทองธานี',
+    mapsQuery: 'Beef Express Beehive Muang Thong Thani',
     highlightTag: 'โปรตีน 52g · วันงบเยอะ',
   },
   {
@@ -92,6 +118,10 @@ export const MUANG_THONG_MEALS: MuangThongMeal[] = [
     restaurantName: 'Nuti Homemade Steak House (Cosmo Bazaar)',
     zoneLabel: 'Cosmo Bazaar เมืองทองธานี',
     distanceLabel: '1.4 กม. จากเจนีวา 3',
+    driveMinutes: 6,
+    parkingInfoTh: 'อาคารจอดรถ Cosmo Bazaar กว้างมาก',
+    canLineman: true,
+    canDriveIn: true,
     category: 'steak',
     categoryLabelTh: 'สเต็กโฮมเมด',
     menuName: 'สเต็กอกไก่พริกไทยดำ Double + สลัดผัก',
@@ -102,6 +132,7 @@ export const MUANG_THONG_MEALS: MuangThongMeal[] = [
     fatG: 10,
     kcal: 375,
     linemanQuery: 'Nuti Homemade Steak House Cosmo Bazaar เมืองทอง',
+    mapsQuery: 'Cosmo Bazaar Muang Thong Thani',
     highlightTag: 'คุ้มมาก 48g โปรตีน',
   },
   {
@@ -109,6 +140,10 @@ export const MUANG_THONG_MEALS: MuangThongMeal[] = [
     restaurantName: 'Shinkanzen Sushi (Cosmo Bazaar)',
     zoneLabel: 'Cosmo Bazaar ชั้น 1',
     distanceLabel: '1.4 กม. จากเจนีวา 3',
+    driveMinutes: 6,
+    parkingInfoTh: 'อาคารจอดรถ Cosmo Bazaar',
+    canLineman: true,
+    canDriveIn: true,
     category: 'japanese',
     categoryLabelTh: 'ญี่ปุ่น / แซลมอน',
     menuName: 'ข้าวหน้าแซลมอนสด (ลดข้าว) + แซลมอนซาชิมิ 5 ชิ้น',
@@ -119,6 +154,7 @@ export const MUANG_THONG_MEALS: MuangThongMeal[] = [
     fatG: 14,
     kcal: 470,
     linemanQuery: 'Shinkanzen Sushi Cosmo Bazaar เมืองทอง',
+    mapsQuery: 'Shinkanzen Sushi Cosmo Bazaar Muang Thong Thani',
     highlightTag: 'มื้อหลังเล่นเวทดีมาก',
   },
   {
@@ -126,6 +162,10 @@ export const MUANG_THONG_MEALS: MuangThongMeal[] = [
     restaurantName: 'Tsubohachi (Beehive / Cosmo Bazaar)',
     zoneLabel: 'Beehive & Cosmo Bazaar เมืองทอง',
     distanceLabel: '1.1 กม. จากเจนีวา 3',
+    driveMinutes: 4,
+    parkingInfoTh: 'จอดรถในห้าง Beehive สะดวกมาก',
+    canLineman: true,
+    canDriveIn: true,
     category: 'japanese',
     categoryLabelTh: 'ญี่ปุ่น / แซลมอน',
     menuName: 'เซตปลาซาบะ/แซลมอนย่างเกลือ + ซุปมิโซะ + ข้าวญี่ปุ่น',
@@ -136,12 +176,17 @@ export const MUANG_THONG_MEALS: MuangThongMeal[] = [
     fatG: 15,
     kcal: 490,
     linemanQuery: 'Tsubohachi Beehive เมืองทองธานี',
+    mapsQuery: 'Tsubohachi Beehive Muang Thong Thani',
   },
   {
     id: 'mtt-mk-suki',
     restaurantName: 'MK Restaurants (Cosmo Bazaar)',
     zoneLabel: 'Cosmo Bazaar ชั้น 1',
     distanceLabel: '1.4 กม. จากเจนีวา 3',
+    driveMinutes: 6,
+    parkingInfoTh: 'อาคารจอดรถ Cosmo Bazaar',
+    canLineman: true,
+    canDriveIn: true,
     category: 'thai',
     categoryLabelTh: 'สุกี้ / ไทย',
     menuName: 'สุกี้น้ำรวมมิตรอกไก่-เนื้อปลา + เป็ดย่างจานเล็กไม่เอาหนัง',
@@ -152,6 +197,7 @@ export const MUANG_THONG_MEALS: MuangThongMeal[] = [
     fatG: 10,
     kcal: 410,
     linemanQuery: 'MK Restaurants Cosmo Bazaar เมืองทองธานี',
+    mapsQuery: 'MK Restaurants Cosmo Bazaar Muang Thong Thani',
     highlightTag: 'อิ่มสบายท้อง ไขมันต่ำ',
   },
   {
@@ -159,6 +205,10 @@ export const MUANG_THONG_MEALS: MuangThongMeal[] = [
     restaurantName: 'มิสเตอร์ไฮ้ไก่อบถัง (Cosmo Bazaar)',
     zoneLabel: 'Cosmo Bazaar เมืองทองธานี',
     distanceLabel: '1.4 กม. จากเจนีวา 3',
+    driveMinutes: 6,
+    parkingInfoTh: 'อาคารจอดรถ Cosmo Bazaar',
+    canLineman: true,
+    canDriveIn: true,
     category: 'thai',
     categoryLabelTh: 'ไทย / ไก่อบ',
     menuName: 'ไก่อบถังเนื้ออก (ครึ่งตัว/สับไม่เอาหนัง) + ข้าวสวย 1 ถ้วย',
@@ -169,29 +219,106 @@ export const MUANG_THONG_MEALS: MuangThongMeal[] = [
     fatG: 8,
     kcal: 435,
     linemanQuery: 'มิสเตอร์ไฮ้ไก่อบถัง Cosmo เมืองทอง',
+    mapsQuery: 'Cosmo Bazaar Muang Thong Thani',
     highlightTag: 'คุ้มงบ ฿145 ได้ 46g โปรตีน',
   },
   {
-    id: 'mtt-isaan-grill',
-    restaurantName: 'ส้มตำ-ไก่ย่าง โซนบอนด์สตรีท / Beehive',
-    zoneLabel: 'ถนนบอนด์สตรีท เมืองทองธานี',
-    distanceLabel: '0.9 กม. จากเจนีวา 3',
+    id: 'mtt-sizzler-chaengwattana',
+    restaurantName: 'Sizzler (เซ็นทรัล แจ้งวัฒนะ)',
+    zoneLabel: 'เซ็นทรัล แจ้งวัฒนะ (ขับรถไปกินคุ้มมาก)',
+    distanceLabel: '3.8 กม. จากเจนีวา 3',
+    driveMinutes: 10,
+    parkingInfoTh: 'อาคารจอดรถเซ็นทรัล แจ้งวัฒนะ (ฟรี 3 ชม.)',
+    canLineman: true,
+    canDriveIn: true,
+    category: 'steak',
+    categoryLabelTh: 'สเต็ก + สลัดบาร์',
+    menuName: 'สเต็กอกไก่ย่างสไปซี่ + สลัดบาร์ตักผัก-ไข่ต้ม-ถั่วไม่อั้น',
+    orderNoteTh: 'นั่งกินที่ร้านคุ้มสุด! ตักไข่ต้ม อกไก่ฉีก และผักสด (เลี่ยงซุปครีม/ขนมปังชีส)',
+    priceThb: 329,
+    proteinG: 52,
+    carbsG: 35,
+    fatG: 11,
+    kcal: 450,
+    linemanQuery: 'Sizzler เซ็นทรัล แจ้งวัฒนะ',
+    mapsQuery: 'Sizzler Central Chaengwattana',
+    highlightTag: '🚗 ขับไปกินคุ้มสุด!',
+  },
+  {
+    id: 'mtt-ohkajhu-chaengwattana',
+    restaurantName: 'โอ้กะจู๋ Ohkajhu (เซ็นทรัล แจ้งวัฒนะ)',
+    zoneLabel: 'เซ็นทรัล แจ้งวัฒนะ',
+    distanceLabel: '3.8 กม. จากเจนีวา 3',
+    driveMinutes: 10,
+    parkingInfoTh: 'อาคารจอดรถเซ็นทรัล แจ้งวัฒนะ',
+    canLineman: true,
+    canDriveIn: true,
+    category: 'clean',
+    categoryLabelTh: 'คลีน / ออร์แกนิก',
+    menuName: 'สลัดอกไก่ย่างออร์แกนิก / สเต็กปลาแซลมอนผักสด',
+    orderNoteTh: 'จานใหญ่มาก แบ่งกินได้ 2 มื้อ! ขอแยกน้ำสลัดทุกครั้ง',
+    priceThb: 295,
+    proteinG: 46,
+    carbsG: 34,
+    fatG: 11,
+    kcal: 420,
+    linemanQuery: 'โอ้กะจู๋ เซ็นทรัล แจ้งวัฒนะ',
+    mapsQuery: 'Ohkajhu Central Chaengwattana',
+    highlightTag: '🚗 จานใหญ่ผักสดมาก',
+  },
+  {
+    id: 'mtt-teenoi-lean',
+    restaurantName: 'สุกี้ตี๋น้อย (โซนแจ้งวัฒนะ / เมืองทอง)',
+    zoneLabel: 'ถนนแจ้งวัฒนะ (ใกล้ทางเข้าเมืองทอง)',
+    distanceLabel: '3.5 กม. จากเจนีวา 3',
+    driveMinutes: 9,
+    parkingInfoTh: 'มีลานจอดรถหน้าร้านสะดวกมาก',
+    canLineman: false,
+    canDriveIn: true,
     category: 'thai',
-    categoryLabelTh: 'อีสาน / ไก่ย่าง',
-    menuName: 'อกไก่ย่างไม่หนัง + ลาบหมูไม่ติดมัน + ส้มตำไทยไม่น้ำตาล',
-    orderNoteTh: 'โน้ต LINE MAN: ลาบไม่ใส่หนังหมู ไม่ชูรส ส้มตำหวานน้อย',
+    categoryLabelTh: 'ชาบูสายลีน (นั่งร้าน)',
+    menuName: 'บุฟเฟต์ชาบูสายลีน: สันนอกหมู + เนื้อสไลซ์ไม่ติดมัน + กุ้ง + ผักสด',
+    orderNoteTh: 'ทริคสายฟิต: เลือกซุปน้ำใส สั่งสันนอก/เนื้อไม่ติดมัน/กุ้ง/ไข่ไก่ จิ้มน้ำจิ้มแต่น้อย โปรตีนทะลุ 65g!',
+    priceThb: 276,
+    proteinG: 65,
+    carbsG: 25,
+    fatG: 14,
+    kcal: 490,
+    linemanQuery: 'สุกี้ตี๋น้อย แจ้งวัฒนะ',
+    mapsQuery: 'Suki Teenoi Chaengwattana',
+    highlightTag: '🚗 ขับไปกิน · โปรตีน 65g!',
+  },
+  {
+    id: 'mtt-mali-market',
+    restaurantName: 'ตลาดมะลิ เลียบด่วนเมืองทอง (โซนปลาเผา-ไก่ย่าง)',
+    zoneLabel: 'ตลาดมะลิ เลียบด่วนเมืองทองธานี',
+    distanceLabel: '1.5 กม. จากเจนีวา 3',
+    driveMinutes: 5,
+    parkingInfoTh: 'ลานจอดรถตลาดมะลิ กว้างมาก (เปิดช่วงเย็น)',
+    canLineman: true,
+    canDriveIn: true,
+    category: 'thai',
+    categoryLabelTh: 'อีสาน / ปลาเผา',
+    menuName: 'ปลากะพง/ปลาทับทิมเผาเกลือ + ผักสด + น้ำจิ้มซีฟู้ด',
+    orderNoteTh: 'มื้อเย็นสายลีนตัวจริง! แคลอรี่ต่ำมากแต่ได้โปรตีนจากปลาเต็มๆ',
     priceThb: 165,
-    proteinG: 44,
-    carbsG: 28,
-    fatG: 9,
-    kcal: 370,
-    linemanQuery: 'ไก่ย่าง ส้มตำ เมืองทองธานี บอนด์สตรีท',
+    proteinG: 48,
+    carbsG: 15,
+    fatG: 7,
+    kcal: 315,
+    linemanQuery: 'ปลาเผา ตลาดมะลิ เมืองทองธานี',
+    mapsQuery: 'Mali Market Muang Thong Thani',
+    highlightTag: '🚗 ขับ 5 นาที · มื้อเย็นลีนสุด',
   },
   {
     id: 'mtt-chicken-rice-lean',
     restaurantName: 'ข้าวมันไก่ต้ม (โซนเมืองทอง / ตึกแถวป๊อปปูล่า)',
     zoneLabel: 'เมืองทองธานี / Cosmo Food Court',
     distanceLabel: '1.0 กม. จากเจนีวา 3',
+    driveMinutes: 4,
+    parkingInfoTh: 'จอดริมทางโซนตึกแถว หรือ Cosmo Bazaar',
+    canLineman: true,
+    canDriveIn: true,
     category: 'budget',
     categoryLabelTh: 'ประหยัด / จานด่วน',
     menuName: 'ข้าวสวย + ไก่ต้มเนื้ออกพิเศษไม่เอาหนัง (เพิ่มไก่) + ซุปฟัก',
@@ -202,81 +329,109 @@ export const MUANG_THONG_MEALS: MuangThongMeal[] = [
     fatG: 6,
     kcal: 400,
     linemanQuery: 'ข้าวมันไก่ เมืองทองธานี',
+    mapsQuery: 'ข้าวมันไก่ เมืองทองธานี',
     highlightTag: 'สายประหยัดต่ำกว่า ฿100',
-  },
-  {
-    id: 'mtt-suki-nam-lean',
-    restaurantName: 'สุกี้น้ำอกไก่ (โซนตลาดมะลิ / เมืองทอง)',
-    zoneLabel: 'ตลาดมะลิ / เลียบด่วนเมืองทอง',
-    distanceLabel: '1.3 กม. จากเจนีวา 3',
-    category: 'budget',
-    categoryLabelTh: 'ประหยัด / จานด่วน',
-    menuName: 'สุกี้น้ำอกไก่พิเศษ + ไข่ต้ม/ไข่ลวก 2 ฟอง (วุ้นเส้นน้อย)',
-    orderNoteTh: 'โน้ต LINE MAN: ใส่ผักเยอะๆ วุ้นเส้นครึ่งเดียว แยกน้ำจิ้มสุกี้',
-    priceThb: 95,
-    proteinG: 38,
-    carbsG: 30,
-    fatG: 8,
-    kcal: 345,
-    linemanQuery: 'สุกี้น้ำ เมืองทองธานี',
   },
   {
     id: 'mtt-711-geneva',
     restaurantName: '7-Eleven Delivery (ใกล้คอนโดเจนีวา 3 เลควิว)',
     zoneLabel: 'โซนคอนโดเลควิว เมืองทองธานี',
     distanceLabel: '0.2 กม. จากเจนีวา 3',
+    driveMinutes: 1,
+    parkingInfoTh: 'เดินลงจากตึกเจนีวา 3 ได้เลย หรือสั่ง Delivery',
+    canLineman: true,
+    canDriveIn: true,
     category: 'budget',
     categoryLabelTh: 'ประหยัด / 7-11',
     menuName: 'อกไก่นุ่มพริกไทยดำ 2 ชิ้น + ไข่ต้ม 2 ฟอง + ข้าวไรซ์เบอร์รี่ 1 กล่อง',
-    orderNoteTh: 'สั่งผ่าน 7-Delivery หรือ LINE MAN Mart ได้ 24 ชม. โปรตีนแน่นสุด!',
+    orderNoteTh: 'สั่งผ่าน LINE MAN Mart / 7-Delivery ได้ 24 ชม. โปรตีนแน่นสุด!',
     priceThb: 125,
     proteinG: 54,
     carbsG: 42,
     fatG: 9,
     kcal: 465,
     linemanQuery: '7-Eleven เมืองทองธานี',
+    mapsQuery: '7-Eleven Lake View Muang Thong Thani',
     highlightTag: 'โปรตีน 54g ในงบ ฿125!',
   },
 ];
 
-export function buildLinemanOrderUrl(query: string): string {
-  // Wongnai is LINE MAN's official integrated partner directory with 1-tap "สั่งผ่าน LINE MAN" on every restaurant page
+export function buildWongnaiLinemanFallbackUrl(query: string): string {
   return `https://www.wongnai.com/restaurants?q=${encodeURIComponent(query)}&regions=1`;
+}
+
+export function buildGoogleMapsDirectionUrl(destinationQuery: string): string {
+  const origin = 'Lake View Condominium Geneva 3 Muang Thong Thani';
+  return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destinationQuery)}&travelmode=driving`;
+}
+
+/**
+ * Attempts to open the LINE MAN native app directly on iOS/Android,
+ * auto-copies the restaurant name so user can paste immediately if needed,
+ * and falls back gracefully to Wongnai/LINE MAN web directory on desktop or if app isn't installed.
+ */
+export function openInLinemanApp(query: string, onToast?: (msg: string) => void) {
+  try {
+    navigator.clipboard?.writeText(query);
+  } catch {
+    // ignore clipboard errors
+  }
+
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const fallbackUrl = buildWongnaiLinemanFallbackUrl(query);
+
+  if (isMobile) {
+    onToast?.(`คัดลอกชื่อร้าน "${query}" แล้ว · กำลังเปิดแอป LINE MAN...`);
+    const now = Date.now();
+    // Try opening LINE MAN native app directly
+    window.location.href = `lineman://`;
+    // Fallback to Wongnai/LINE MAN web if app didn't take focus
+    setTimeout(() => {
+      if (Date.now() - now < 1600 && !document.hidden) {
+        window.open(fallbackUrl, '_blank', 'noopener,noreferrer');
+      }
+    }, 900);
+  } else {
+    onToast?.(`คัดลอกชื่อร้านแล้ว · กำลังเปิดหน้าสั่ง LINE MAN บนเว็บ...`);
+    window.open(fallbackUrl, '_blank', 'noopener,noreferrer');
+  }
 }
 
 export function generateDailyMealCombo(
   dailyBudget: number,
   mealsPerDay: number,
-  seed: number
+  seed: number,
+  diningMode: DiningMode = 'all'
 ): MuangThongMeal[] {
   const safeBudget = Math.max(150, dailyBudget);
   const safeMeals = Math.max(1, Math.min(4, mealsPerDay));
   const avgPerMeal = safeBudget / safeMeals;
 
-  // Sort eligible meals by how well they fit the per-meal budget (preferring rich protein within budget)
-  const sorted = [...MUANG_THONG_MEALS].sort((a, b) => {
+  const eligible = MUANG_THONG_MEALS.filter((m) => {
+    if (diningMode === 'lineman') return m.canLineman;
+    if (diningMode === 'drive') return m.canDriveIn;
+    return true;
+  });
+
+  const sorted = [...eligible].sort((a, b) => {
     const aFit = a.priceThb <= avgPerMeal * 1.25 ? 1 : 0;
     const bFit = b.priceThb <= avgPerMeal * 1.25 ? 1 : 0;
     if (aFit !== bFit) return bFit - aFit;
-    // Higher protein per meal
     return b.proteinG - a.proteinG;
   });
 
-  // Deterministic shuffle using seed so user can click "สุ่มเซตใหม่"
   const pool = [...sorted];
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.abs((seed * 31 + i * 17) % (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
   }
 
-  // Try to assemble `safeMeals` distinct restaurants within dailyBudget
   const chosen: MuangThongMeal[] = [];
   let spent = 0;
 
   for (let slot = 0; slot < safeMeals; slot++) {
     const remainingSlots = safeMeals - slot;
     const remainingBudget = safeBudget - spent;
-    // Reserve at least 85 THB for each remaining meal
     const maxForThisSlot = remainingBudget - (remainingSlots - 1) * 85;
 
     const candidate =
@@ -284,11 +439,10 @@ export function generateDailyMealCombo(
         (m) =>
           !chosen.some((c) => c.id === m.id) &&
           m.priceThb <= maxForThisSlot &&
-          // Prefer variety of restaurants
           !chosen.some((c) => c.restaurantName === m.restaurantName)
       ) ??
       pool.find((m) => !chosen.some((c) => c.id === m.id) && m.priceThb <= maxForThisSlot) ??
-      [...MUANG_THONG_MEALS]
+      [...eligible]
         .filter((m) => !chosen.some((c) => c.id === m.id))
         .sort((a, b) => a.priceThb - b.priceThb)[0];
 
